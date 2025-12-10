@@ -1,0 +1,16 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "./Dockerfile"
+
+[deploy]
+numReplicas = 1
+sleepApplication = false
+restartPolicyMaxRetries = 10
+healthcheckPath = "/"
+healthcheckTimeout = 5
+
+[env]
+# These will be set via Railway dashboard for security
+# DATABASE_URL will be auto-generated from PostgreSQL plugin
+# SECRET_KEY should be set in Railway dashboard
+# Other env vars should be set in Railway dashboard
