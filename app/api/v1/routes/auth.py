@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.orm import Session
+from typing import Dict, Any
 
 from app.db.session import get_db
 from app.services.auth_service import AuthService, oauth
@@ -12,18 +13,34 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 @router.get("/google", summary="Initiate Google sign-in")
 async def google_login(request: Request):
     """
-    Redirect to Google OAuth login page.
-    User will sign in with Google.
+    Initiate Google OAuth login flow.
+    Returns the Google authorization URL that frontend should redirect to.
+    
+    Response includes:
+    - authorization_url: URL to redirect user to Google login
     """
     redirect_uri = request.url_for('google_callback')
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    authorization_url = await oauth.google.authorize_redirect(
+        request, 
+        redirect_uri,
+        _external=True
+    )
+    
+    # Return authorization URL for frontend to handle redirect
+    return JSONResponse(
+        status_code=200,
+        content={
+            "authorization_url": authorization_url,
+            "message": "Redirect user to the authorization_url to sign in with Google"
+        }
+    )
 
 
 @router.get("/google/callback", summary="Google OAuth callback")
 async def google_callback(request: Request, db: Session = Depends(get_db)):
     """
     Handle Google OAuth callback.
-    Creates user if not exists, returns JWT token.
+    Creates user if not exists and returns JWT token with user details.
     """
     # Get token from Google
     token = await oauth.google.authorize_access_token(request)
@@ -52,5 +69,23 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
     # Create JWT token
     access_token = auth_service.create_jwt_for_user(user.id)
     
-    # Return token (in production, redirect to frontend with token)
-    return TokenResponse(access_token=access_token)
+    # Return response with token and user information
+    return JSONResponse(
+        status_code=200,
+        content={
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": {
+                "id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "picture": user.picture,
+                "is_active": user.is_active
+            },
+            "wallet": {
+                "id": user.wallet.id if user.wallet else None,
+                "wallet_number": user.wallet.wallet_number if user.wallet else None,
+                "balance": str(user.wallet.balance) if user.wallet else None
+            }
+        }
+    )
