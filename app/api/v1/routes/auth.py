@@ -5,6 +5,7 @@ from typing import Dict, Any
 
 from app.db.session import get_db
 from app.services.auth_service import AuthService, oauth
+from app.config import settings
 from app.schemas.auth import TokenResponse
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -19,8 +20,9 @@ async def google_login(request: Request):
     Response includes:
     - authorization_url: URL to redirect user to Google login
     """
-    redirect_uri = request.url_for('google_callback')
-    
+    # Use the configured redirect URI (ensures HTTPS and exact match with Google Console)
+    redirect_uri = settings.GOOGLE_REDIRECT_URI
+
     # Use authorize_redirect to set up session state and get RedirectResponse
     redirect_response = await oauth.google.authorize_redirect(request, redirect_uri)
 
