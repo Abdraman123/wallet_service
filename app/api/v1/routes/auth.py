@@ -24,7 +24,7 @@ async def google_login(request: Request):
     # Get authorization URL from Google OAuth
     authorization_url, state = await oauth.google.create_authorization_url(
         request,
-        redirect_uri=str(redirect_uri)
+        str(redirect_uri)
     )
     
     # Return authorization URL for frontend to handle redirect
