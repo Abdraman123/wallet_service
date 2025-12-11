@@ -14,8 +14,7 @@ class DepositRequest(BaseModel):
     def amount_in_kobo(self) -> int:
         """Convert Naira to kobo."""
         return int(self.amount * 100)
-    currency: str
-    recipient_wallet_number: str
+    
 
 class TransferRequest(BaseModel):
     """Request model for wallet transfer."""
@@ -35,7 +34,6 @@ class DepositStatusResponse(BaseModel):
     reference: str
     status: str
     amount: float
-    currency: str
     paid_at: Optional[datetime]
 
 class BalanceResponse(BaseModel):
@@ -54,7 +52,6 @@ class TransactionResponse(BaseModel):
     amount: Decimal
     status: str
     reference: str
-    recipient_wallet_number: Optional[str] = None
     created_at: datetime
 
     class Config:

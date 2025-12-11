@@ -81,17 +81,6 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
         content={
             "access_token": access_token,
             "token_type": "bearer",
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "name": user.name,
-                "picture": user.picture,
-                "is_active": user.is_active
-            },
-            "wallet": {
-                "id": user.wallet.id if user.wallet else None,
-                "wallet_number": user.wallet.wallet_number if user.wallet else None,
-                "balance": str(user.wallet.balance) if user.wallet else None
-            }
+           
         }
     )
