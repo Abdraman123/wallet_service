@@ -8,12 +8,11 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e .
-
-# Copy application code
+# Copy all project files (needed because pyproject.toml references README.md)
 COPY . .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -e .
 
 EXPOSE 8000
 
